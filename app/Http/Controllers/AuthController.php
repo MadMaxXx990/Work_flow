@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -27,7 +26,8 @@ class AuthController extends Controller
             
             /** @var \App\Models\User $user */
             $user = Auth::user();
-            $user->update(['last_login' => now()]);
+            $user->last_login = now();
+            $user->save();
 
             $role = $user->role->role_name ?? null;
 
@@ -42,7 +42,7 @@ class AuthController extends Controller
             'username' => 'The provided credentials do not match our records.',
         ])->onlyInput('username');
     }
-    
+
     public function logout(Request $request) {
         Auth::logout();
         $request->session()->invalidate();

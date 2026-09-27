@@ -7,14 +7,9 @@ use Illuminate\Database\Eloquent\Model;
 class Position extends Model
 {
     protected $primaryKey = 'position_id';
+    protected $fillable = ['position_name', 'description'];
 
-    protected $fillable = [
-        'position_name',
-        'description',
-    ];
-
-    public function employees()
-    {
+    public function employees() {
         return $this->hasMany(Employee::class, 'position_id', 'position_id');
     }
 }

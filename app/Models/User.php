@@ -9,8 +9,6 @@ class User extends Authenticatable
 {
     use Notifiable;
 
-    protected $primaryKey = 'user_id'; // Explicit primary key
-
     protected $fillable = [
         'employee_id',
         'role_id',
