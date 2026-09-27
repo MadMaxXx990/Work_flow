@@ -7,46 +7,35 @@ use Illuminate\Support\Facades\Auth;
 
 class AuthController extends Controller
 {
-    public function showLogin() {
+    public function showLoginForm()
+    {
+        // Simply return the view so /login NEVER redirects
         return view('auth.login');
     }
 
-    public function login(Request $request) {
+    public function login(Request $request)
+    {
         $credentials = $request->validate([
-            'username' => 'required|string',
-            'password' => 'required|string',
+            'username' => ['required'],
+            'password' => ['required'],
         ]);
 
-        if (Auth::attempt([
-            'username' => $credentials['username'], 
-            'password' => $credentials['password'], 
-            'status' => 'active'
-        ])) {
+        if (Auth::attempt($credentials)) {
             $request->session()->regenerate();
-            
-            /** @var \App\Models\User $user */
-            $user = Auth::user();
-            $user->last_login = now();
-            $user->save();
-
-            $role = $user->role->role_name ?? null;
-
-            if ($role === 'Administrator') {
-                return redirect()->route('admin.employees.index');
-            }
-
-            return redirect()->route('login');
+            return redirect()->intended('/admin/employees');
         }
 
         return back()->withErrors([
             'username' => 'The provided credentials do not match our records.',
-        ])->onlyInput('username');
+        ]);
     }
 
-    public function logout(Request $request) {
+    public function logout(Request $request)
+    {
         Auth::logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
-        return redirect()->route('login');
+
+        return redirect('/login');
     }
 }
