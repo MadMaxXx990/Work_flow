@@ -33,6 +33,22 @@
             display: flex; flex-direction: column;
             z-index: 1040;
             transition: transform .25s ease;
+            overflow: hidden;
+        }
+        /* Scrollable nav area between brand and footer */
+        #sidebar .sidebar-nav {
+            flex: 1 1 0;
+            overflow-y: auto;
+            overflow-x: hidden;
+            /* thin custom scrollbar so it doesn't look bulky */
+            scrollbar-width: thin;
+            scrollbar-color: rgba(255,255,255,.15) transparent;
+        }
+        #sidebar .sidebar-nav::-webkit-scrollbar { width: 4px; }
+        #sidebar .sidebar-nav::-webkit-scrollbar-track { background: transparent; }
+        #sidebar .sidebar-nav::-webkit-scrollbar-thumb {
+            background: rgba(255,255,255,.18);
+            border-radius: 99px;
         }
         #sidebar .sidebar-brand {
             display: flex; align-items: center; gap: .6rem;
@@ -147,7 +163,7 @@
 
     @auth
         @php $role = Auth::user()->role?->role_name; @endphp
-
+        <div class="sidebar-nav">
         {{-- ── ADMINISTRATOR ────────────────────────────────── --}}
         @if($role === 'Administrator')
             <span class="nav-section">Main</span>
@@ -209,6 +225,7 @@
                 @endif
             </a>
         @endif
+        </div>{{-- end .sidebar-nav --}}
 
         {{-- ── Shared logout ──────────────────────────────────── --}}
         <div class="sidebar-footer">

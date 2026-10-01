@@ -25,13 +25,79 @@
     @endforeach
 </div>
 
-<div class="d-flex justify-content-between align-items-center mb-3">
-    <h6 class="fw-semibold mb-0">Recent Tasks</h6>
-    <a href="{{ route('manager.tasks.create') }}" class="btn btn-primary btn-sm">
-        <i class="bi bi-plus-circle me-1"></i> Assign Task
-    </a>
+{{-- ── Team Workload ────────────────────────────────────────────────────── --}}
+<div class="card-fl mb-4">
+    <div class="d-flex align-items-center justify-content-between p-3 border-bottom">
+        <div>
+            <span class="fw-semibold">Team Workload</span>
+            <span class="text-muted small ms-2">active tasks per employee · sorted heaviest first</span>
+        </div>
+        <a href="{{ route('manager.tasks.create') }}" class="btn btn-sm btn-primary py-0 px-2">
+            <i class="bi bi-plus-circle me-1"></i> Assign Task
+        </a>
+    </div>
+    <div class="p-3">
+        @forelse($teamWorkload as $member)
+        @php
+            $pct      = $maxWorkload > 0 ? round(($member->active_tasks / $maxWorkload) * 100) : 0;
+            $barColor = match(true) {
+                $member->active_tasks >= 7 => '#ef4444',
+                $member->active_tasks >= 4 => '#f59e0b',
+                $member->active_tasks >= 1 => '#10b981',
+                default                    => '#d1d5db',
+            };
+            $label = match(true) {
+                $member->active_tasks >= 7 => 'Heavy',
+                $member->active_tasks >= 4 => 'Moderate',
+                $member->active_tasks >= 1 => 'Available',
+                default                    => 'Free',
+            };
+        @endphp
+        <div class="d-flex align-items-center gap-3 py-2 border-bottom">
+            <div class="rounded-circle text-white fw-bold d-grid flex-shrink-0"
+                 style="width:34px;height:34px;background:{{ $barColor }};place-items:center;display:grid;font-size:.78rem;">
+                {{ strtoupper(substr($member->first_name, 0, 1)) }}
+            </div>
+            <div style="min-width:140px;">
+                <div class="fw-semibold small">{{ $member->first_name }} {{ $member->last_name }}</div>
+                <div style="font-size:.7rem;color:#9ca3af;">
+                    @if($member->overdue_tasks > 0)
+                        <span class="text-danger">{{ $member->overdue_tasks }} overdue</span>
+                    @else
+                        No overdue
+                    @endif
+                </div>
+            </div>
+            <div class="flex-grow-1">
+                <div class="progress" style="height:8px;border-radius:99px;">
+                    <div class="progress-bar" role="progressbar"
+                         style="width:{{ max($pct, 3) }}%;background:{{ $barColor }};border-radius:99px;transition:width .4s ease;">
+                    </div>
+                </div>
+            </div>
+            <div class="text-end flex-shrink-0" style="min-width:110px;">
+                <span class="fw-bold small">{{ $member->active_tasks }}</span>
+                <span class="text-muted small"> active task{{ $member->active_tasks != 1 ? 's' : '' }}</span>
+                <span class="badge ms-1 rounded-pill"
+                      style="background:{{ $barColor }}22;color:{{ $barColor }};font-size:.65rem;border:1px solid {{ $barColor }}44;">
+                    {{ $label }}
+                </span>
+            </div>
+        </div>
+        @empty
+        <div class="text-center py-4 text-muted small">
+            <i class="bi bi-people opacity-50 d-block fs-3 mb-1"></i>
+            No active task assignments yet. <a href="{{ route('manager.tasks.create') }}">Assign the first task</a>.
+        </div>
+        @endforelse
+    </div>
 </div>
 
+{{-- ── Recent Tasks ─────────────────────────────────────────────────────── --}}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h6 class="fw-semibold mb-0">Recent Tasks</h6>
+    <a href="{{ route('manager.tasks.index') }}" class="btn btn-outline-secondary btn-sm">View all</a>
+</div>
 <div class="card-fl">
     <div class="table-responsive">
         <table class="table table-hover align-middle mb-0 small">

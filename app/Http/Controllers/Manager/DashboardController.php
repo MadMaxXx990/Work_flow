@@ -6,7 +6,9 @@ use App\Http\Controllers\Controller;
 use App\Models\Task;
 use App\Models\WorkflowStage;
 use App\Models\Employee;
+use App\Models\TaskAssignment;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class DashboardController extends Controller
 {
@@ -42,9 +44,29 @@ class DashboardController extends Controller
 
         $totalEmployees = Employee::where('is_deleted', false)->count();
 
+        // ── Team Workload ─────────────────────────────────────────────────────
+        // Active = any stage that is not Completed, on a task created by this manager.
+        // Grouped by employee, sorted heaviest first.
+        $teamWorkload = Employee::select('employees.employee_id', 'employees.first_name', 'employees.last_name')
+            ->selectRaw('COUNT(DISTINCT tasks.task_id) as active_tasks')
+            ->selectRaw('SUM(CASE WHEN tasks.due_date < CURDATE() THEN 1 ELSE 0 END) as overdue_tasks')
+            ->join('task_assignments', 'employees.employee_id', '=', 'task_assignments.employee_id')
+            ->join('tasks', 'task_assignments.task_id', '=', 'tasks.task_id')
+            ->where('tasks.created_by_user_id', $userId)
+            ->where('tasks.is_deleted', false)
+            ->where('tasks.stage_id', '!=', $completedStageId)
+            ->where('employees.is_deleted', false)
+            ->groupBy('employees.employee_id', 'employees.first_name', 'employees.last_name')
+            ->orderByDesc('active_tasks')
+            ->get();
+
+        // Max active tasks across the team — used to size the load bars
+        $maxWorkload = $teamWorkload->max('active_tasks') ?: 1;
+
         return view('manager.dashboard', compact(
             'totalMyTasks', 'pendingApproval', 'completedTasks', 'overdueTasks',
-            'recentTasks', 'totalEmployees'
+            'recentTasks', 'totalEmployees',
+            'teamWorkload', 'maxWorkload'
         ));
     }
 }

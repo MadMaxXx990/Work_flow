@@ -65,10 +65,27 @@ class DashboardController extends Controller
             ->take(5)
             ->get();
 
+        // ── Team Workload ─────────────────────────────────────────────────────
+        // All employees with at least one active (non-completed) task assigned.
+        // Includes employees with zero active tasks too (full picture).
+        $teamWorkload = Employee::select('employees.employee_id', 'employees.first_name', 'employees.last_name')
+            ->addSelect(DB::raw('COUNT(DISTINCT CASE WHEN tasks.stage_id != ' . (int)$completedStageId . ' AND tasks.is_deleted = 0 THEN tasks.task_id END) as active_tasks'))
+            ->addSelect(DB::raw('SUM(CASE WHEN tasks.due_date < CURDATE() AND tasks.stage_id != ' . (int)$completedStageId . ' AND tasks.is_deleted = 0 THEN 1 ELSE 0 END) as overdue_tasks'))
+            ->leftJoin('task_assignments', 'employees.employee_id', '=', 'task_assignments.employee_id')
+            ->leftJoin('tasks', 'task_assignments.task_id', '=', 'tasks.task_id')
+            ->where('employees.is_deleted', false)
+            ->where('employees.status', 'Active')
+            ->groupBy('employees.employee_id', 'employees.first_name', 'employees.last_name')
+            ->orderByDesc('active_tasks')
+            ->get();
+
+        $maxWorkload = $teamWorkload->max('active_tasks') ?: 1;
+
         return view('admin.dashboard', compact(
             'totalEmployees', 'totalTasks',
             'pendingCount', 'inProgressCount', 'forReviewCount', 'completedCount', 'overdueCount',
-            'tasksByStage', 'weeklyChart', 'presentToday', 'recentTasks'
+            'tasksByStage', 'weeklyChart', 'presentToday', 'recentTasks',
+            'teamWorkload', 'maxWorkload'
         ));
     }
 }
