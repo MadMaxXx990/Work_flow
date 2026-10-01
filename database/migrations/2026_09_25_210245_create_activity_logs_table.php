@@ -6,20 +6,19 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::create('activity_logs', function (Blueprint $table) {
-            $table->id();
+            $table->id('log_id');
+            $table->unsignedBigInteger('user_id');
+            $table->string('action_type'); // login | assignment | update | approval | create | delete
+            $table->string('table_affected')->nullable();
+            $table->unsignedBigInteger('record_id')->nullable();
+            $table->text('description')->nullable();
             $table->timestamps();
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('activity_logs');

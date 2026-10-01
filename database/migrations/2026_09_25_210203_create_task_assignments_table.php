@@ -6,20 +6,18 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::create('task_assignments', function (Blueprint $table) {
-            $table->id();
+            $table->id('assignment_id');
+            $table->unsignedBigInteger('task_id');
+            $table->unsignedBigInteger('employee_id');
+            $table->unsignedBigInteger('assigned_by_user_id');
+            $table->timestamp('assigned_at')->useCurrent();
             $table->timestamps();
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('task_assignments');

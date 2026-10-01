@@ -6,18 +6,18 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::create('users', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('employee_id')->nullable();
+            $table->unsignedBigInteger('employee_id')->nullable()->unique();
             $table->unsignedBigInteger('role_id')->nullable();
             $table->string('username')->unique();
             $table->string('password');
             $table->string('status')->default('active');
+            $table->string('reset_token')->nullable();
+            $table->integer('failed_login_attempts')->default(0);
+            $table->timestamp('last_login')->nullable();
             $table->boolean('is_deleted')->default(false);
             $table->rememberToken();
             $table->timestamps();
@@ -38,9 +38,7 @@ return new class extends Migration
             $table->integer('last_activity')->index();
         });
     }
-    /**
-     * Reverse the migrations.
-     */
+
     public function down(): void
     {
         Schema::dropIfExists('users');

@@ -6,20 +6,18 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::create('task_comments', function (Blueprint $table) {
-            $table->id();
+            $table->id('comment_id');
+            $table->unsignedBigInteger('task_id');
+            $table->unsignedBigInteger('user_id');
+            $table->text('comment_text');
+            $table->boolean('is_deleted')->default(false);
             $table->timestamps();
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('task_comments');

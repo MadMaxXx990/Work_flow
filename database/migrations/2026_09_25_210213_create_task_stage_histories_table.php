@@ -6,22 +6,22 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
-        Schema::create('task_stage_histories', function (Blueprint $table) {
-            $table->id();
+        Schema::create('task_stage_history', function (Blueprint $table) {
+            $table->id('history_id');
+            $table->unsignedBigInteger('task_id');
+            $table->unsignedBigInteger('changed_by_user_id');
+            $table->unsignedBigInteger('old_stage_id')->nullable();
+            $table->unsignedBigInteger('new_stage_id');
+            $table->text('remarks')->nullable();
+            $table->timestamp('changed_at')->useCurrent();
             $table->timestamps();
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
-        Schema::dropIfExists('task_stage_histories');
+        Schema::dropIfExists('task_stage_history');
     }
 };
